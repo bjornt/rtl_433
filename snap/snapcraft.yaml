@@ -1,0 +1,56 @@
+name: rtl-433-bjornt
+base: core22
+summary: Program to decode radio transmissions from devices on the ISM bands
+description: |
+  rtl_433 (despite the name) is a generic data receiver, mainly for the 433.92
+  MHz, 868 MHz (SRD), 315 MHz, 345 MHz, and 915 MHz ISM bands.
+
+  The official source code is in the https://github.com/merbanan/rtl_433/
+  repository. For more documentation and related projects see the
+  https://triq.org/ site.
+
+  It works with RTL-SDR and/or SoapySDR. Actively tested and supported are
+  Realtek RTL2832 based DVB dongles (using RTL-SDR) and LimeSDR (LimeSDR USB
+  and LimeSDR mini engineering samples kindly provided by MyriadRf), PlutoSDR,
+  HackRF One (using SoapySDR drivers), as well as SoapyRemote.
+
+  This is a snap of the rtl_433 project at
+  https://github.com/merbanan/rtl_433/. Nightly builds get pushed to the edge,
+  while official releases first go to the candidate channel, and then later
+  to stable.
+
+contact: https://github.com/bjornt/rtl_433/issues
+issues: https://github.com/bjornt/rtl_433/issues
+license: GPL-2.0
+adopt-info: rtl_433
+
+
+grade: stable
+confinement: strict
+
+apps:
+  rtl-433:
+    command: usr/bin/rtl_433
+    plugs:
+      - raw-usb
+      - network
+
+parts:
+  rtl_433:
+    plugin: cmake
+    build-packages:
+      - libtool
+      - libusb-1.0-0-dev
+      - librtlsdr-dev
+      - rtl-sdr
+      - build-essential 
+      - pkg-config
+    stage-packages:
+      - rtl-sdr
+      - libusb-1.0-0
+    override-pull: |
+      snapcraftctl pull
+      snapcraftctl set-version $(git describe --tags --long HEAD^)
+    source: .
+    cmake-parameters:
+      - -DCMAKE_INSTALL_PREFIX=/usr
