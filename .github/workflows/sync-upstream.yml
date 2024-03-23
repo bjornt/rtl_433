@@ -1,0 +1,32 @@
+on:
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+jobs:
+  sync-upstream:
+    runs-on: ubuntu-latest
+    name: Sync Upstream
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          repository: bjornt/rtl_433
+          fetch-depth: 0
+          token: ${{ secrets.PUSH_TOKEN }}
+      - name: Configure git
+        run: |
+          git config --global user.name github-actions
+          git config --global user.email github-actions@github.com
+          git remote add upstream https://github.com/merbanan/rtl_433.git
+        shell: bash
+      - name: Rebase
+        id: rebase
+        run: |
+          git fetch upstream --tags --force
+          git checkout master
+          echo "TAG=$(git describe --abbrev=0 --tags)"
+          echo "TAGS=$(git tag)"
+          git rebase nightly
+          git push --force-with-lease
+          git push --force --tags
